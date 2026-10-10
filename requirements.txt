@@ -1,0 +1,12 @@
+Flask==3.0.3
+Werkzeug==3.0.3
+gunicorn==22.0.0
+psycopg2-binary==2.9.9
+python-dotenv==1.0.1
+# "headless" = no desktop GUI libraries, required on Railway/Docker servers. The -contrib build
+# provides cv2.face (LBPH face recognition).
+opencv-contrib-python-headless==4.10.0.84
+numpy==1.26.4
+# Needed by PDF/Excel report exports (were missing from the original requirements.txt)
+reportlab==4.2.2
+openpyxl==3.1.5

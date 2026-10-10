@@ -1,0 +1,68 @@
+{% extends "parent/base_parent.html" %}
+{% block title %}{{ child.first_name }}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('parent.dashboard') }}">&laquo; All children</a></p>
+<section class="pp-welcome">
+  <h1>{{ child.first_name }} {{ child.middle_name or '' }} {{ child.surname }}</h1>
+  <p>{{ child.class_name or 'No class' }} · Admission no. {{ child.admission_number }}</p>
+</section>
+
+{% if pct is not none and pct < threshold %}
+<div class="alert-banner">Attendance is {{ '%.1f' % pct }}%, below the school's {{ '%.0f' % threshold }}% expectation. Please speak with the class teacher.</div>
+{% endif %}
+
+<div class="pp-stats">
+  <div class="pp-stat"><b>{{ ('%.1f%%' % pct) if pct is not none else '—' }}</b><small>Attendance</small></div>
+  <div class="pp-stat"><b>{{ totals.present }}</b><small>Present</small></div>
+  <div class="pp-stat"><b>{{ totals.late }}</b><small>Late</small></div>
+  <div class="pp-stat"><b>{{ totals.absent }}</b><small>Absent</small></div>
+  <div class="pp-stat"><b>{{ totals.excused }}</b><small>Excused</small></div>
+</div>
+
+<div class="pp-panel">
+  <h2>Recent school days</h2>
+  {% if days %}
+  <div class="pp-days">
+    {% for d in days %}
+    <span class="pp-day {% if d.absent %}bad{% elif d.late %}late{% else %}ok{% endif %}" title="Present {{ d.present }}, Late {{ d.late }}, Absent {{ d.absent }}, Excused {{ d.excused }}">{{ d.session_date }}</span>
+    {% endfor %}
+  </div>
+  <p class="pp-legend">Green: present &nbsp; Amber: late &nbsp; Red: absent in at least one session.</p>
+  {% else %}<p class="muted">No attendance has been recorded yet.</p>{% endif %}
+</div>
+
+{% if subjects %}
+<div class="pp-panel">
+  <h2>By subject</h2>
+  {% for s in subjects %}
+  <div class="pp-subject"><span>{{ s.subject_name }}</span><b>{{ ('%.0f%%' % s.pct) if s.pct is not none else '—' }}</b>
+    <div class="pp-bar"><i style="width: {{ s.pct or 0 }}%"></i></div></div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="pp-panel">
+  <h2>Attendance log</h2>
+  <form method="get" class="filter-bar">
+    <div class="form-group"><label>Status</label>
+      <select name="status"><option value="">All</option>{% for st in statuses %}<option value="{{ st }}" {% if status == st %}selected{% endif %}>{{ st.replace('_',' ')|capitalize }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label>From</label><input type="date" name="date_from" value="{{ date_from }}"></div>
+    <div class="form-group"><label>To</label><input type="date" name="date_to" value="{{ date_to }}"></div>
+    <button class="btn btn-primary" type="submit">Filter</button>
+  </form>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Subject</th><th>Status</th><th>Time</th></tr></thead>
+    <tbody>
+      {% for r in records %}
+      <tr><td>{{ r.session_date }}</td><td>{{ r.subject_name }}</td>
+        <td><span class="badge {% if r.status in ('present',) %}badge-success{% elif r.status in ('late','excused','pending_verification') %}badge-warning{% else %}badge-error{% endif %}">{{ r.status.replace('_',' ')|capitalize }}</span></td>
+        <td>{{ (r.recorded_at or '')[11:16] or '—' }}</td></tr>
+      {% else %}<tr><td colspan="4">No records match.</td></tr>{% endfor %}
+    </tbody></table></div>
+  <div class="pagination">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}&status={{ status }}&date_from={{ date_from }}&date_to={{ date_to }}">&laquo; Prev</a>{% endif %}
+    <span>Page {{ page }} &middot; {{ total_rows }} records</span>
+    {% if page * per_page < total_rows %}<a href="?page={{ page + 1 }}&status={{ status }}&date_from={{ date_from }}&date_to={{ date_to }}">Next &raquo;</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

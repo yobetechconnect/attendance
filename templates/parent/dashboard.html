@@ -1,0 +1,26 @@
+{% extends "parent/base_parent.html" %}
+{% block title %}My Children{% endblock %}
+{% block content %}
+<section class="pp-welcome">
+  <h1>Welcome, {{ g.user.full_name.split(' ')[0] }}</h1>
+  <p>Follow your {{ 'child' if children|length == 1 else 'children' }}'s school attendance.</p>
+</section>
+{% if children %}
+<div class="pp-children">
+  {% for c in children %}
+  <a class="pp-child-card" href="{{ url_for('parent.child', student_id=c.id) }}">
+    {% set p = c.pct %}
+    <div class="pp-ring {% if p is not none and p < threshold %}bad{% elif p is not none and p < threshold + 10 %}warn{% endif %}" style="--p: {{ p or 0 }}"><span>{{ ('%.0f%%' % p) if p is not none else '—' }}</span></div>
+    <div>
+      <h2>{{ c.first_name }} {{ c.surname }}</h2>
+      <p class="pp-sub">{{ c.class_name or 'No class' }} · {{ c.admission_number }}</p>
+      <p class="pp-sub">{{ c.attended }} of {{ c.total }} sessions attended</p>
+      {% if p is not none and p < threshold %}<span class="badge badge-error">Low attendance</span>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="pp-panel"><p>No student is linked to your account yet. Please contact the school office to link your child.</p></div>
+{% endif %}
+{% endblock %}

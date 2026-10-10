@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Access Denied · AL-ISTI'ANAH ACADEMY DAMATURU</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="error-screen">
+  <p class="error-code">403</p>
+  <h1>Access Denied</h1>
+  <p class="error-message">You don't have permission to view this page.</p>
+  <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Back to Login</a>
+</div>
+</body>
+</html>

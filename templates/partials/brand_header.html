@@ -1,0 +1,14 @@
+{% set _logo = school_settings.logo_url if school_settings and school_settings.logo_url else None %}
+{% if _logo %}
+  <img class="school-logo" src="{{ _logo }}" alt="School logo" referrerpolicy="no-referrer"
+       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  <div class="school-logo-placeholder" style="display:none;">AIA</div>
+{% elif school_settings and school_settings.logo_path %}
+  <img class="school-logo" src="{{ url_for('school_admin.branding_file', filename=school_settings.logo_path.split('/')[-1]) }}" alt="School logo">
+{% else %}
+  <div class="school-logo-placeholder">AIA</div>
+{% endif %}
+<div>
+  <div class="school-name-en">{{ school_settings.school_name if school_settings else "AL-ISTI'ANAH ACADEMY DAMATURU" }}</div>
+  <div class="school-name-ar">{{ school_settings.school_name_arabic if school_settings else 'أكاديمية الإستعانة دماترو' }}</div>
+</div>

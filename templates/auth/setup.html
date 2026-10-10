@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}First-time Setup{% endblock %}
+{% block auth_content %}
+<div class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand school-brand" style="margin-bottom:18px;">{% include "partials/brand_header.html" %}</div>
+    <h1 class="auth-title">Create the Super Administrator</h1>
+    <p class="auth-subtitle">One-time setup. Enter the SETUP_TOKEN you configured on the server.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group"><label>Setup token</label><input type="password" name="setup_token" required autocomplete="off"></div>
+      <div class="form-group"><label>Full name</label><input type="text" name="full_name" required></div>
+      <div class="form-group"><label>Email (your login)</label><input type="email" name="email" required autocomplete="username"></div>
+      <div class="form-group"><label>Password</label><input type="password" name="password" required minlength="8" autocomplete="new-password"></div>
+      <div class="form-group"><label>Confirm password</label><input type="password" name="confirm_password" required minlength="8" autocomplete="new-password"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Create account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

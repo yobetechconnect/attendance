@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Log In{% endblock %}
+{% block auth_content %}
+<div class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-brand school-brand" style="margin-bottom:18px;">
+      {% include "partials/brand_header.html" %}
+    </div>
+    <h1 class="auth-title">Sign in</h1>
+    <p class="auth-subtitle">{{ school_settings.tagline if school_settings else "Excellence in Qur'anic Memorization & Academics" }}</p>
+
+    <form method="post" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="email">Email, admission number or phone</label>
+        <input type="text" id="email" name="email" required autofocus autocomplete="username" autocapitalize="none">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Log In</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

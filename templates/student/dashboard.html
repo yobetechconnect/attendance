@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}My Attendance{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+{% block content %}
+
+{% if student is none %}
+<div class="section"><p>No student profile is linked to this account. Please contact the school office.</p></div>
+{% else %}
+
+{% if low_attendance_warning %}
+<div class="section">
+  <p class="badge badge-error">Your overall attendance is below the school's threshold. Please see your class teacher.</p>
+</div>
+{% endif %}
+
+<div class="stat-grid">
+  <div class="card stat-card"><div class="stat-label">Admission No.</div><div class="stat-value" style="font-size:18px;">{{ student.admission_number }}</div></div>
+  <div class="card stat-card"><div class="stat-label">Class</div><div class="stat-value" style="font-size:18px;">{{ student.class_name or '—' }}</div></div>
+  <div class="card stat-card"><div class="stat-label">Overall Attendance</div><div class="stat-value">{{ overall.pct or 0 }}%</div></div>
+</div>
+
+<div class="section">
+  <h2>Attendance by Subject</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Subject</th><th>Sessions</th><th>Attended</th><th>Percentage</th></tr></thead>
+      <tbody>
+        {% for c in per_subject %}
+        <tr {% if c.category == 'QURANIC' %}class="subject-quranic"{% endif %}>
+          <td>{{ c.subject_name }}</td>
+          <td>{{ c.total }}</td>
+          <td>{{ c.attended }}</td>
+          <td>
+            {% if c.pct >= 75 %}<span class="badge badge-success">{{ c.pct }}%</span>
+            {% elif c.pct >= 50 %}<span class="badge badge-warning">{{ c.pct }}%</span>
+            {% else %}<span class="badge badge-error">{{ c.pct }}%</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No attendance recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Recent Attendance</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Subject</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in recent %}
+        <tr>
+          <td>{{ r.session_date }}</td>
+          <td>{{ r.subject_name }}</td>
+          <td>
+            {% if r.status == 'present' %}<span class="badge badge-success">Present</span>
+            {% elif r.status == 'late' %}<span class="badge badge-warning">Late</span>
+            {% elif r.status == 'absent' %}<span class="badge badge-error">Absent</span>
+            {% else %}<span class="badge badge-info">{{ r.status|capitalize }}</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No attendance recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

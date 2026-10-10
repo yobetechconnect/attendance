@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}QR Check-in{% endblock %}
+{% block page_title %}QR Check-in{% endblock %}
+{% block content %}
+<div class="section">
+  <p style="color:var(--color-text-muted);">Select your active class session, then show the code to your teacher's scanner.
+  Codes are short-lived and single-use.</p>
+  {% if active_sessions %}
+  <div class="form-group" style="max-width:320px;">
+    <label>Active Session</label>
+    <select id="sessionSelect">
+      {% for s in active_sessions %}
+      <option value="{{ s.id }}">{{ s.subject_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button id="genBtn" class="btn btn-primary">Generate Code</button>
+  <div id="codeWrap" style="margin-top:20px; display:none;">
+    <div class="qr-code-display" id="codeDisplay"></div>
+    <p id="expiryNote" style="color:var(--color-text-muted); font-size:13px; margin-top:8px;"></p>
+  </div>
+  {% else %}
+  <p>No active attendance session for your class right now.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const csrfToken = "{{ csrf_token() }}";
+const genBtn = document.getElementById('genBtn');
+if (genBtn) {
+  genBtn.addEventListener('click', async () => {
+    const sessionId = document.getElementById('sessionSelect').value;
+    const res = await fetch(`/student/qr/${sessionId}/token`, {
+      method: 'POST', headers: { 'X-CSRF-Token': csrfToken },
+    });
+    const data = await res.json();
+    if (data.token) {
+      document.getElementById('codeDisplay').textContent = data.token;
+      document.getElementById('expiryNote').textContent = `Expires in ${data.ttl_seconds} seconds — regenerate if it expires.`;
+      document.getElementById('codeWrap').style.display = 'block';
+    } else {
+      alert(data.error || 'Could not generate a code.');
+    }
+  });
+}
+</script>
+{% endblock %}

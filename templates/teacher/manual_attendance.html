@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Manual Attendance{% endblock %}
+{% block page_title %}Manual Attendance — {{ session.session_code }}{% endblock %}
+{% block content %}
+<div class="section">
+  <p style="color:var(--color-text-muted);">Every manual entry is logged with your name and timestamp (Section 21).</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Admission No.</th><th>Name</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in roster %}
+        <tr>
+          <td>{{ s.admission_number }}</td>
+          <td>{{ s.first_name }} {{ s.surname }}</td>
+          <td>{% if s.is_marked %}<span class="badge badge-success">Marked</span>{% else %}<span class="badge badge-neutral">Not marked</span>{% endif %}</td>
+          <td>
+            {% if not s.is_marked %}
+            <form method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="student_id" value="{{ s.id }}">
+              <button type="submit" class="btn btn-outline" style="padding:6px 12px;">Mark Present</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No active students found in this class.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <a href="{{ url_for('teacher.scanner', session_id=session.id) }}" class="btn btn-outline">Back to Scanner</a>
+</div>
+{% endblock %}

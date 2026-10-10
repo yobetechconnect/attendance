@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Bulk Import{% endblock %}
+{% block page_title %}Bulk Student Import{% endblock %}
+{% block content %}
+
+<div class="section">
+  <p>Import thousands of students at once from a CSV file. Download the template, fill it in, then upload.
+  Every row is validated before anything is saved — duplicates, missing fields, and unknown classes are
+  reported without corrupting the database.</p>
+  <a href="{{ url_for('admin_people.students_import_template') }}" class="btn btn-outline">Download CSV Template</a>
+</div>
+
+<div class="section">
+  <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label>CSV File</label>
+      <input type="file" name="csv_file" accept=".csv" required>
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="preview_only" checked> Preview only (don't save yet)</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Run Import</button>
+  </form>
+</div>
+
+{% if summary %}
+<div class="section">
+  <h2>Import Summary</h2>
+  <div class="stat-grid">
+    <div class="card stat-card"><div class="stat-label">Total Rows</div><div class="stat-value">{{ summary.total_rows }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Successful</div><div class="stat-value">{{ summary.success_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Duplicates</div><div class="stat-value">{{ summary.duplicate_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Invalid Class</div><div class="stat-value">{{ summary.invalid_class_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Missing Fields</div><div class="stat-value">{{ summary.missing_field_count }}</div></div>
+  </div>
+  {% if credentials %}
+  <p class="muted">Each imported student received their own random temporary password. The list was shown once in the dialog — copy or save it before closing.</p>
+  {% endif %}
+  {% if summary.errors %}
+  <h3>Row Errors</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Row</th><th>Type</th><th>Detail</th></tr></thead>
+      <tbody>
+        {% for e in summary.errors %}
+        <tr><td>{{ e.row }}</td><td>{{ e.type|replace('_',' ')|capitalize }}</td><td>{{ e.detail }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

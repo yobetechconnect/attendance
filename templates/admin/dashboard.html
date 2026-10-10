@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="section">
+  <h2>Today {% if session_row %}&middot; {{ session_row.name }}{% endif %}{% if term_row %} &middot; {{ term_row.name }}{% endif %}</h2>
+  <div class="stat-grid">
+    <div class="card stat-card">
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value">{{ total_students }}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">Present</div>
+      <div class="stat-value">{{ stats.present }}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">Late</div>
+      <div class="stat-value">{{ stats.late }}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">Absent</div>
+      <div class="stat-value">{{ stats.absent }}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">Excused</div>
+      <div class="stat-value">{{ stats.excused }}</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">Attendance %</div>
+      <div class="stat-value">{{ attendance_pct }}%</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Live</h2>
+  <div class="live-count">
+    <div class="count-box"><div class="n">{{ active_sessions }}</div><div class="label">Active Sessions</div></div>
+    <div class="count-box"><div class="n">{{ marked_today }}</div><div class="label">Records Today</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>School</h2>
+  <div class="stat-grid">
+    <div class="card stat-card"><div class="stat-label">Teachers</div><div class="stat-value">{{ counts.teachers }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Classes</div><div class="stat-value">{{ counts.classes }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Subjects</div><div class="stat-value">{{ counts.subjects }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Sections</div><div class="stat-value">{{ counts.sections }}</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Alerts &middot; Low Attendance (below {{ settings.attendance_threshold_pct }}%)</h2>
+  {% if low_attendance %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Admission No.</th><th>Name</th><th>Attendance %</th></tr></thead>
+      <tbody>
+        {% for s in low_attendance %}
+        <tr>
+          <td>{{ s.admission_number }}</td>
+          <td>{{ s.first_name }} {{ s.surname }}</td>
+          <td><span class="badge badge-error">{{ s.pct }}%</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No students currently below the attendance threshold.</p>
+  {% endif %}
+  <a href="{{ url_for('reports.low_attendance_report') }}" class="btn btn-outline">View full report</a>
+</div>
+
+{% endblock %}

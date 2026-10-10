@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Subjects{% endblock %}
+{% block page_title %}Subjects{% endblock %}
+{% block content %}
+<div class="section">
+  <h2>Create Subject</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="filter-bar">
+      <div class="form-group"><label>Code</label><input type="text" name="code" placeholder="MATH101" required></div>
+      <div class="form-group"><label>Name</label><input type="text" name="name" required></div>
+      <div class="form-group">
+        <label>Category</label>
+        <select name="category" required>
+          <option value="QURANIC">Qur'anic</option>
+          <option value="ACADEMIC">Academic</option>
+          <option value="ISLAMIC_STUDIES">Islamic Studies</option>
+          <option value="LANGUAGE">Language</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Description</label><input type="text" name="description"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Subject</button>
+  </form>
+</div>
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Code</th><th>Name</th><th>Category</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in rows %}
+        <tr {% if s.category == 'QURANIC' %}class="subject-quranic"{% endif %}>
+          <td>{{ s.code }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.category|replace('_',' ')|capitalize }}</td>
+          <td>{% if s.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-neutral">Inactive</span>{% endif %}</td>
+          <td>
+            {% if s.is_active %}
+            <form method="post" action="{{ url_for('school_admin.deactivate_subject', subject_id=s.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline" style="padding:6px 12px;">Deactivate</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No subjects yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

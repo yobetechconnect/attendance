@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+{% block content %}
+
+<div class="section">
+  <form method="get" class="filter-bar">
+    <div class="form-group"><label>Search</label><input type="text" name="q" value="{{ q }}" placeholder="Name or admission no."></div>
+    <div class="form-group">
+      <label>Class</label>
+      <select name="class_id">
+        <option value="">All classes</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {% if class_filter == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <option value="">Any</option>
+        {% for st in statuses %}
+        <option value="{{ st }}" {% if status_filter == st %}selected{% endif %}>{{ st|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('admin_people.students_import') }}" class="btn btn-outline">Bulk Import</a>
+  </form>
+</div>
+
+<div class="section">
+  <h2>Add Student</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="filter-bar">
+      <div class="form-group"><label>First Name</label><input type="text" name="first_name" required></div>
+      <div class="form-group"><label>Middle Name</label><input type="text" name="middle_name"></div>
+      <div class="form-group"><label>Surname</label><input type="text" name="surname" required></div>
+      <div class="form-group"><label>Admission Number</label><input type="text" name="admission_number" required></div>
+      <div class="form-group">
+        <label>Class</label>
+        <select name="class_id" required>
+          <option value="">Select class</option>
+          {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Gender</label>
+        <select name="gender"><option value="">--</option><option value="male">Male</option><option value="female">Female</option></select>
+      </div>
+      <div class="form-group"><label>Date of Birth</label><input type="date" name="date_of_birth"></div>
+      <div class="form-group"><label>Phone</label><input type="text" name="phone"></div>
+      <div class="form-group"><label>Qur'anic Level</label><input type="text" name="quranic_level" placeholder="e.g. Juz 5"></div>
+    </div>
+    <details class="parent-fields">
+      <summary>Create a Parent / Guardian login for this student (optional)</summary>
+      <p class="muted">The parent signs in to the Parent Portal to see this child's attendance. If the email or phone already belongs to a parent (a sibling), this student is linked to that existing account.</p>
+      <div class="filter-bar">
+        <div class="form-group"><label>Parent / Guardian Name</label><input type="text" name="parent_name"></div>
+        <div class="form-group"><label>Parent Email</label><input type="email" name="parent_email"></div>
+        <div class="form-group"><label>Parent Phone</label><input type="text" name="parent_phone"></div>
+        <div class="form-group"><label>Relationship</label><input type="text" name="parent_relationship" placeholder="Father, Mother..."></div>
+      </div>
+    </details>
+    <button type="submit" class="btn btn-primary">Create Student</button>
+  </form>
+</div>
+
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Admission No.</th><th>Class</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in rows %}
+        <tr>
+          <td>{{ s.first_name }} {{ s.surname }}</td>
+          <td>{{ s.admission_number }}</td>
+          <td>{{ s.class_name or '—' }}</td>
+          <td>
+            {% if s.status == 'active' %}<span class="badge badge-success">Active</span>
+            {% else %}<span class="badge badge-neutral">{{ s.status|capitalize }}</span>{% endif %}
+            {% if not s.is_active %}<span class="badge badge-error">Account disabled</span>{% endif %}
+          </td>
+          <td class="row-actions">
+            <a href="{{ url_for('admin_people.student_view', student_id=s.id) }}" class="btn btn-outline btn-sm">View</a>
+            {% if can('students.edit') %}<a href="{{ url_for('admin_people.student_edit', student_id=s.id) }}" class="btn btn-outline btn-sm">Edit</a>{% endif %}
+            {% if can('students.reset_password') %}
+            <form method="post" action="{{ url_for('admin_people.reset_student_password', student_id=s.id) }}" style="display:inline;" data-confirm="Reset the password for {{ s.first_name }} {{ s.surname }}? The old password will stop working immediately.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline btn-sm">Reset password</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}&q={{ q|urlencode }}&class_id={{ class_filter }}&status={{ status_filter }}">&laquo; Prev</a>{% endif %}
+    <span>Page {{ page }} &middot; Showing up to {{ per_page }} of {{ total }} students</span>
+    {% if page * per_page < total %}<a href="?page={{ page + 1 }}&q={{ q|urlencode }}&class_id={{ class_filter }}&status={{ status_filter }}">Next &raquo;</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

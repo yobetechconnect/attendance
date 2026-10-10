@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Academic Sessions{% endblock %}
+{% block page_title %}Academic Sessions{% endblock %}
+{% block content %}
+<div class="section">
+  <h2>Create Academic Session</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="filter-bar">
+      <div class="form-group"><label>Name</label><input type="text" name="name" placeholder="2026/2027" required></div>
+      <div class="form-group"><label>Start Date</label><input type="date" name="start_date" required></div>
+      <div class="form-group"><label>End Date</label><input type="date" name="end_date" required></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</div>
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Start</th><th>End</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in rows %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.start_date }}</td>
+          <td>{{ s.end_date }}</td>
+          <td>{% if s.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-neutral">Inactive</span>{% endif %}</td>
+          <td>
+            {% if not s.is_active %}
+            <form method="post" action="{{ url_for('school_admin.activate_academic_session', session_id=s.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline" style="padding:6px 12px;">Activate</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No academic sessions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Face Enrollment{% endblock %}
+{% block page_title %}Face Enrollment{% endblock %}
+{% block content %}
+<div class="section">
+  <form method="get" class="filter-bar"><div class="form-group"><label>Search</label><input type="text" name="q" value="{{ q }}" placeholder="Name or admission no."></div><button class="btn btn-primary" type="submit">Search</button></form>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Admission No.</th><th>Face Samples</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.first_name }} {{ s.surname }}</td>
+          <td>{{ s.admission_number }}</td>
+          <td>{{ s.sample_count or 0 }}</td>
+          <td>
+            {% if s.profile_active %}<span class="badge badge-success">Enrolled</span>
+            {% else %}<span class="badge badge-warning">Not Enrolled</span>{% endif %}
+          </td>
+          <td><a href="{{ url_for('admin_biometrics.enrollment_capture', student_id=s.id) }}" class="btn btn-outline" style="padding:6px 12px;">
+            {{ 'Re-enroll' if s.profile_active else 'Enroll' }}
+          </a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No students yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}&q={{ q|urlencode }}">&laquo; Prev</a>{% endif %}
+    <span>Page {{ page }} &middot; {{ total }} students</span>
+    {% if page * per_page < total %}<a href="?page={{ page + 1 }}&q={{ q|urlencode }}">Next &raquo;</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

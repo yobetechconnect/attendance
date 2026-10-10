@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Face Enrollment · {{ student.first_name }} {{ student.surname }}{% endblock %}
+{% block page_title %}Face Enrollment — {{ student.first_name }} {{ student.surname }}{% endblock %}
+{% block content %}
+
+<div class="section" style="max-width:560px;">
+  <p style="color:var(--color-text-muted); font-size:14px; margin-top:0;">
+    Consent notice: this will capture and store facial images of
+    <strong>{{ student.first_name }} {{ student.surname }}</strong> ({{ student.admission_number }}) for the sole
+    purpose of automated attendance recognition. Ensure the student (or guardian) has consented
+    before proceeding.
+  </p>
+
+  <div id="cameraStatus" class="badge badge-info" style="margin-bottom:12px;">Camera: Not started</div>
+
+  <div style="position:relative; width:100%; max-width:420px; aspect-ratio:4/3; background:#111; border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px;">
+    <video id="video" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+  <div id="progressWrap" style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+      <span>Sample <span id="sampleCount">{{ current_samples }}</span> / {{ required_samples }}</span>
+      <span id="progressPct">{{ (current_samples / required_samples * 100) | round | int }}%</span>
+    </div>
+    <div style="height:8px; border-radius:999px; background:var(--color-bg); overflow:hidden;">
+      <div id="progressBar" style="height:100%; background:var(--color-primary); width:{{ (current_samples / required_samples * 100) | round | int }}%; transition: width 200ms ease;"></div>
+    </div>
+  </div>
+
+  <div id="feedback" style="min-height:20px; font-size:13px; margin-bottom:12px; color:var(--color-text-muted);"></div>
+
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <button id="startBtn" class="btn btn-primary">Start Camera</button>
+    <button id="captureBtn" class="btn btn-outline" disabled>Start Capturing</button>
+    <button id="finishBtn" class="btn btn-primary" style="display:none;">Finish Enrollment</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const studentId = {{ student.id }};
+const requiredSamples = {{ required_samples }};
+let currentSamples = {{ current_samples }};
+const csrfToken = "{{ csrf_token() }}";
+
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const statusEl = document.getElementById('cameraStatus');
+const feedbackEl = document.getElementById('feedback');
+const startBtn = document.getElementById('startBtn');
+const captureBtn = document.getElementById('captureBtn');
+const finishBtn = document.getElementById('finishBtn');
+const sampleCountEl = document.getElementById('sampleCount');
+const progressBar = document.getElementById('progressBar');
+const progressPct = document.getElementById('progressPct');
+
+let stream = null;
+let capturing = false;
+let captureTimer = null;
+
+function updateProgress() {
+  sampleCountEl.textContent = currentSamples;
+  const pct = Math.min(100, Math.round((currentSamples / requiredSamples) * 100));
+  progressBar.style.width = pct + '%';
+  progressPct.textContent = pct + '%';
+  if (currentSamples >= requiredSamples) {
+    captureBtn.style.display = 'none';
+    finishBtn.style.display = 'inline-flex';
+    capturing = false;
+    if (captureTimer) clearInterval(captureTimer);
+  }
+}
+
+startBtn.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 360 } });
+    video.srcObject = stream;
+    statusEl.textContent = 'Camera: Connected';
+    statusEl.className = 'badge badge-success';
+    captureBtn.disabled = false;
+    startBtn.disabled = true;
+  } catch (err) {
+    statusEl.textContent = 'Camera: Permission denied or unavailable';
+    statusEl.className = 'badge badge-error';
+    feedbackEl.textContent = 'Could not access the camera: ' + err.message;
+  }
+});
+
+captureBtn.addEventListener('click', () => {
+  if (capturing) {
+    capturing = false;
+    captureBtn.textContent = 'Resume Capturing';
+    clearInterval(captureTimer);
+    return;
+  }
+  capturing = true;
+  captureBtn.textContent = 'Pause';
+  captureTimer = setInterval(captureFrame, 900);
+});
+
+async function captureFrame() {
+  if (!capturing || currentSamples >= requiredSamples) return;
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob(async (blob) => {
+    const formData = new FormData();
+    formData.append('frame', blob, 'frame.jpg');
+    formData.append('csrf_token', csrfToken);
+
+    try {
+      const res = await fetch(`/admin/biometrics/${studentId}/capture`, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        currentSamples = data.sample_count;
+        feedbackEl.textContent = `Sample ${currentSamples} captured.`;
+        feedbackEl.style.color = 'var(--color-success)';
+        updateProgress();
+      } else {
+        feedbackEl.textContent = data.error || 'Sample rejected.';
+        feedbackEl.style.color = 'var(--color-warning)';
+      }
+    } catch (err) {
+      feedbackEl.textContent = 'Upload failed: ' + err.message;
+      feedbackEl.style.color = 'var(--color-error)';
+    }
+  }, 'image/jpeg', 0.9);
+}
+
+finishBtn.addEventListener('click', () => {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `/admin/biometrics/${studentId}/finish`;
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'csrf_token';
+  input.value = csrfToken;
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+});
+</script>
+{% endblock %}

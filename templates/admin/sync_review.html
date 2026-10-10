@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Offline Sync Review{% endblock %}
+{% block page_title %}Offline Sync Review{% endblock %}
+{% block content %}
+<div class="section">
+  <p style="color:var(--color-text-muted);">Attendance events queued by devices while offline. Each is validated
+  through the same rules as a live check-in before it becomes an attendance record — nothing here is trusted blindly.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Received</th><th>Device</th><th>Status</th><th>Note</th><th></th></tr></thead>
+      <tbody>
+        {% for e in rows %}
+        <tr>
+          <td>{{ e.received_at }}</td>
+          <td>{{ e.device_name or '—' }}</td>
+          <td>
+            {% if e.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+            {% elif e.status == 'synced' %}<span class="badge badge-success">Synced</span>
+            {% elif e.status == 'rejected' %}<span class="badge badge-error">Rejected</span>
+            {% else %}<span class="badge badge-danger">Conflict</span>{% endif %}
+          </td>
+          <td>{{ e.resolution_note or '—' }}</td>
+          <td>
+            {% if e.status == 'pending' %}
+            <form method="post" action="{{ url_for('admin_ops.sync_apply', event_id=e.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline" style="padding:6px 12px;">Apply</button>
+            </form>
+            <form method="post" action="{{ url_for('admin_ops.sync_reject', event_id=e.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline" style="padding:6px 12px;">Reject</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No offline sync events.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

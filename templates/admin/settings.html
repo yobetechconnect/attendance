@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}School Settings{% endblock %}
+{% block content %}
+<div class="section">
+  <h2>School Identity &amp; Branding</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label>School Name</label>
+      <input type="text" name="school_name" value="{{ settings.school_name }}" required>
+    </div>
+    <div class="form-group">
+      <label>Arabic Name</label>
+      <input type="text" name="school_name_arabic" class="rtl" value="{{ settings.school_name_arabic }}">
+    </div>
+    <div class="form-group">
+      <label>Tagline</label>
+      <input type="text" name="tagline" value="{{ settings.tagline }}">
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" name="address" value="{{ settings.address }}">
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="text" name="phone" value="{{ settings.phone or '' }}">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" value="{{ settings.email or '' }}">
+    </div>
+    <div class="form-group">
+      <label for="logo_url">School Logo URL</label>
+      <input type="url" id="logo_url" name="logo_url" value="{{ settings.logo_url or '' }}" placeholder="https://example.com/school-logo.png" maxlength="500">
+      <small class="muted">A direct https link to an image (.png, .jpg, .jpeg, .gif, .webp, .svg or .ico). Leave empty to use the default badge. If the link stops working, the default badge is shown automatically.</small>
+      {% if settings.logo_url %}
+      <div style="margin-top:8px;"><img src="{{ settings.logo_url }}" alt="Logo preview" style="height:56px;border-radius:8px;" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;muted&quot;>This link could not be loaded.</span>'"></div>
+      {% endif %}
+    </div>
+
+    <h2>Academic Context</h2>
+    <div class="form-group">
+      <label>Current Academic Session</label>
+      <select name="current_session_id">
+        <option value="">-- unchanged --</option>
+        {% for s in sessions %}
+        <option value="{{ s.id }}" {% if settings.current_session_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Current Term</label>
+      <select name="current_term_id">
+        <option value="">-- unchanged --</option>
+        {% for t in terms %}
+        <option value="{{ t.id }}" {% if settings.current_term_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Timezone</label>
+      <input type="text" name="timezone" value="{{ settings.timezone }}">
+    </div>
+
+    <h2>Attendance Rules</h2>
+    <div class="form-group">
+      <label>Low Attendance Threshold (%)</label>
+      <input type="number" step="0.1" name="attendance_threshold_pct" value="{{ settings.attendance_threshold_pct }}">
+    </div>
+    <div class="form-group">
+      <label>Late After (minutes)</label>
+      <input type="number" name="late_after_minutes" value="{{ settings.late_after_minutes }}">
+    </div>
+    <div class="form-group">
+      <label>Default Session Length (minutes)</label>
+      <input type="number" name="session_default_minutes" value="{{ settings.session_default_minutes }}">
+    </div>
+    <div class="form-group">
+      <label>QR Token Lifetime (seconds)</label>
+      <input type="number" name="qr_token_ttl_seconds" value="{{ settings.qr_token_ttl_seconds }}">
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="enable_face_verification" {% if settings.enable_face_verification %}checked{% endif %}> Enable face verification</label>
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" name="enable_qr_verification" {% if settings.enable_qr_verification %}checked{% endif %}> Enable QR verification</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+  </form>
+</div>
+{% endblock %}

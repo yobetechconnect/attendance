@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+{% block page_title %}Departments{% endblock %}
+{% block content %}
+<div class="section">
+  <h2>Create Department</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="filter-bar">
+      <div class="form-group"><label>Name</label><input type="text" name="name" required></div>
+      <div class="form-group">
+        <label>Section</label>
+        <select name="section_id">
+          <option value="">--</option>
+          {% for s in sections %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</div>
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Section</th></tr></thead>
+      <tbody>
+        {% for d in rows %}
+        <tr><td>{{ d.name }}</td><td>{{ d.section_name or '—' }}</td></tr>
+        {% else %}
+        <tr><td colspan="2">No departments yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Temporary Administrators{% endblock %}
+{% block page_title %}Temporary Administrators{% endblock %}
+{% block content %}
+<div class="section">
+  <p class="muted">Two independent accounts, restricted to <strong>student management</strong> (register, search, edit and issue credentials). They cannot open teachers, settings, audit logs, reports, devices or this page — the server blocks those URLs even if typed in.
+  Everything they do is recorded in the audit log under their own name.</p>
+</div>
+
+<div class="card-grid">
+{% for slot, u in slots %}
+  <div class="card">
+    <h2>Temporary Administrator {{ slot }}</h2>
+    {% if u %}
+      <p><strong>{{ u.full_name }}</strong><br>{{ u.email }}</p>
+      <p>
+        {% if u.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-error">Deactivated</span>{% endif %}
+        {% if u.must_change_password %}<span class="badge badge-warning">Password change pending</span>{% endif %}
+      </p>
+      <p class="muted">Last sign-in: {{ u.last_login_at or 'never' }}</p>
+      <div class="row-actions">
+        <form method="post" action="{{ url_for('admin_accounts.temp_admin_reset', slot=slot) }}" data-confirm="Reset the password for Temporary Administrator {{ slot }}? Their current password and sessions stop working immediately.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-primary btn-sm" type="submit">Reset password</button></form>
+        <form method="post" action="{{ url_for('admin_accounts.temp_admin_toggle', slot=slot) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline btn-sm" type="submit">{{ 'Deactivate' if u.is_active else 'Activate' }}</button></form>
+      </div>
+      <details style="margin-top:12px;"><summary>Change who holds this account</summary>
+        <form method="post" action="{{ url_for('admin_accounts.temp_admin_update', slot=slot) }}" data-confirm="Change the account holder? A new password will be issued and the old one stops working.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-group"><label>Full name</label><input type="text" name="full_name" value="{{ u.full_name }}" required></div>
+          <div class="form-group"><label>Email</label><input type="email" name="email" value="{{ u.email }}" required></div>
+          <button class="btn btn-outline btn-sm" type="submit">Save &amp; issue new password</button>
+        </form>
+      </details>
+    {% else %}
+      <p class="muted">This slot is empty.</p>
+      <form method="post" action="{{ url_for('admin_accounts.temp_admin_create', slot=slot) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group"><label>Full name</label><input type="text" name="full_name" required></div>
+        <div class="form-group"><label>Email (login)</label><input type="email" name="email" required></div>
+        <button class="btn btn-primary" type="submit">Create account</button>
+      </form>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+
+<div class="section">
+  <h2>Policy</h2>
+  <form method="post" action="{{ url_for('admin_accounts.temp_admin_policy') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label><input type="checkbox" name="temp_admin_can_reset_passwords" {% if settings.temp_admin_can_reset_passwords %}checked{% endif %}>
+      Allow Temporary Administrators to reset <em>student</em> passwords</label>
+    <p><button class="btn btn-outline btn-sm" type="submit">Save policy</button></p>
+  </form>
+</div>
+{% endblock %}

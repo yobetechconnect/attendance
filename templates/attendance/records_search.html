@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block content %}
+
+<div class="section">
+  <form method="get" class="filter-bar">
+    <div class="form-group">
+      <label>Class</label>
+      <select name="class_id">
+        <option value="">All classes</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {% if class_id == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <select name="subject_id">
+        <option value="">All subjects</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}" {% if subject_id == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <option value="">Any</option>
+        {% for st in ['present','late','absent','excused','pending_verification'] %}
+        <option value="{{ st }}" {% if status == st %}selected{% endif %}>{{ st|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>From</label>
+      <input type="date" name="date_from" value="{{ date_from }}">
+    </div>
+    <div class="form-group">
+      <label>To</label>
+      <input type="date" name="date_to" value="{{ date_to }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('reports.records_export_csv') }}" class="btn btn-outline">Export CSV</a>
+  </form>
+</div>
+
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Student</th><th>Admission No.</th><th>Class</th><th>Subject</th><th>Method</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.session_date }}</td>
+          <td>{{ r.first_name }} {{ r.surname }}</td>
+          <td>{{ r.admission_number }}</td>
+          <td>{{ r.class_name }}</td>
+          <td>{{ r.subject_name }}</td>
+          <td>{{ r.verification_method|replace('_',' ')|capitalize }}</td>
+          <td>
+            {% if r.status == 'present' %}<span class="badge badge-success">Present</span>
+            {% elif r.status == 'late' %}<span class="badge badge-warning">Late</span>
+            {% elif r.status == 'absent' %}<span class="badge badge-error">Absent</span>
+            {% else %}<span class="badge badge-info">{{ r.status|capitalize }}</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">No records match your filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}">&laquo; Prev</a>{% endif %}
+    <span>Page {{ page }} &middot; {{ total }} total</span>
+    {% if page * per_page < total %}<a href="?page={{ page + 1 }}">Next &raquo;</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

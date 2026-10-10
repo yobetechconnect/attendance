@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Class Report · {{ class_row.name }}{% endblock %}
+{% block page_title %}Class Attendance Report — {{ class_row.name }}{% endblock %}
+{% block head %}
+<style>
+  @media print {
+    .sidebar, .topbar, .drawer-toggle, .no-print { display: none !important; }
+    .main-area { margin: 0 !important; }
+    .content { padding: 0 !important; }
+    body { background: #fff; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="section no-print" style="display:flex; justify-content:flex-end; gap:10px;">
+  <a href="?format=pdf" class="btn btn-outline">Download PDF</a>
+  <button onclick="window.print()" class="btn btn-primary">Print</button>
+</div>
+
+<div class="section report-header">
+  {% include "partials/brand_header.html" %}
+  <h2 style="margin:12px 0 0;">Class Attendance Report</h2>
+  <p style="color:var(--color-text-muted); margin:4px 0 0;">{{ class_row.name }}</p>
+</div>
+
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Admission No.</th><th>Present</th><th>Late</th><th>Absent</th><th>Excused</th><th>Percentage</th></tr></thead>
+      <tbody>
+        {% for r in student_rows %}
+        <tr>
+          <td>{{ r.name }}</td>
+          <td>{{ r.admission_number }}</td>
+          <td>{{ r.present }}</td>
+          <td>{{ r.late }}</td>
+          <td>{{ r.absent }}</td>
+          <td>{{ r.excused }}</td>
+          <td>
+            {% if r.pct >= 75 %}<span class="badge badge-success">{{ r.pct }}%</span>
+            {% elif r.pct >= 50 %}<span class="badge badge-warning">{{ r.pct }}%</span>
+            {% else %}<span class="badge badge-error">{{ r.pct }}%</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">No attendance recorded for this class yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

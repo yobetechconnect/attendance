@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="section">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for f in fields %}
+    <div class="form-group">
+      <label>{{ f.label }}</label>
+      {% if f.type == 'select' %}
+      <select name="{{ f.name }}" {% if not f.blank %}required{% endif %}>
+        {% if f.blank %}<option value="">--</option>{% endif %}
+        {% for val, text in f.options %}
+        <option value="{{ val }}" {% if f.value is not none and f.value|string == val|string %}selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <input type="{{ f.type }}" name="{{ f.name }}" value="{{ f.value }}" {% if f.required %}required{% endif %}>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="row-actions">
+      <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+      <a href="{{ back_url }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

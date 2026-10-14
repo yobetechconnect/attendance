@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Attendance System{% endblock %} · AL-ISTI'ANAH ACADEMY DAMATURU</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% if school_settings and school_settings.logo_url %}
+<link rel="icon" id="siteIcon" href="{{ school_settings.logo_url }}" data-fallback="true">
+{% elif school_settings and school_settings.logo_path %}
+<link rel="icon" href="{{ url_for('school_admin.branding_file', filename=school_settings.logo_path.split('/')[-1]) }}">
+{% else %}
+<link rel="icon" id="siteIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b3d5c'/%3E%3Ctext x='32' y='41' font-size='26' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EAIA%3C/text%3E%3C/svg%3E">
+{% endif %}
+{% block head %}{% endblock %}
+</head>
+<body>
+{% if g.user %}
+<div class="app-shell">
+  <button class="drawer-toggle" id="drawerToggle" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand school-brand">
+      {% include "partials/brand_header.html" %}
+    </div>
+    <nav class="sidebar-nav">
+      {% if g.user.role == 'super_admin' %}
+        <a href="{{ url_for('school_admin.dashboard') }}" class="nav-link {% if request.endpoint == 'school_admin.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('admin_people.students_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_people.students') %}active{% endif %}">Students</a>
+        <a href="{{ url_for('admin_accounts.parents_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_accounts.parent') %}active{% endif %}">Parents</a>
+        <a href="{{ url_for('admin_accounts.temp_admins') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_accounts.temp') %}active{% endif %}">Temporary Admins</a>
+        <a href="{{ url_for('admin_people.teachers_list') }}" class="nav-link {% if request.endpoint == 'admin_people.teachers_list' %}active{% endif %}">Teachers</a>
+        <a href="{{ url_for('school_admin.classes_list') }}" class="nav-link {% if request.endpoint == 'school_admin.classes_list' %}active{% endif %}">Classes</a>
+        <a href="{{ url_for('school_admin.subjects_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('school_admin.subject') %}active{% endif %}">Subjects</a>
+        <a href="{{ url_for('school_admin.sections') }}" class="nav-link {% if request.endpoint in ('school_admin.sections','school_admin.departments') %}active{% endif %}">Sections &amp; Depts</a>
+        <a href="{{ url_for('school_admin.academic_sessions') }}" class="nav-link {% if request.endpoint in ('school_admin.academic_sessions','school_admin.terms') %}active{% endif %}">Sessions &amp; Terms</a>
+        <a href="{{ url_for('school_admin.terms') }}" class="nav-link {% if request.endpoint == 'school_admin.terms' %}active{% endif %}">Terms</a>
+        <a href="{{ url_for('school_admin.subject_assignments') }}" class="nav-link {% if request.endpoint and (request.endpoint == 'school_admin.subject_assignments' or request.endpoint.startswith('admin_manage.assignment')) %}active{% endif %}">Teacher Assignments</a>
+        <a href="{{ url_for('admin_biometrics.enrollment_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_biometrics') %}active{% endif %}">Face Enrollment</a>
+        <a href="{{ url_for('admin_devices.devices_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_devices') %}active{% endif %}">Devices</a>
+        <a href="{{ url_for('reports.sessions_list') }}" class="nav-link {% if request.endpoint == 'reports.sessions_list' %}active{% endif %}">Sessions</a>
+        <a href="{{ url_for('reports.records_search') }}" class="nav-link {% if request.endpoint == 'reports.records_search' %}active{% endif %}">Attendance Records</a>
+        <a href="{{ url_for('reports.low_attendance_report') }}" class="nav-link {% if request.endpoint == 'reports.low_attendance_report' %}active{% endif %}">Low Attendance</a>
+        <a href="{{ url_for('admin_ops.sync_review') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_ops.sync') %}active{% endif %}">Offline Sync</a>
+        <a href="{{ url_for('admin_ops.notifications_queue') }}" class="nav-link {% if request.endpoint == 'admin_ops.notifications_queue' %}active{% endif %}">Notifications</a>
+        <a href="{{ url_for('admin_ops.backup') }}" class="nav-link {% if request.endpoint == 'admin_ops.backup' %}active{% endif %}">Backup</a>
+        <a href="{{ url_for('school_admin.audit_log') }}" class="nav-link {% if request.endpoint == 'school_admin.audit_log' %}active{% endif %}">Audit Log</a>
+        <a href="{{ url_for('school_admin.settings_page') }}" class="nav-link {% if request.endpoint == 'school_admin.settings_page' %}active{% endif %}">Settings</a>
+      {% elif g.user.role == 'temp_admin' %}
+        <a href="{{ url_for('admin_people.students_list') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('admin_people.students') %}active{% endif %}">Students</a>
+        <a href="{{ url_for('admin_people.students_import') }}" class="nav-link {% if request.endpoint == 'admin_people.students_import' %}active{% endif %}">Bulk Import</a>
+      {% elif g.user.role in ('teacher', 'attendance_operator') %}
+        <a href="{{ url_for('teacher.dashboard') }}" class="nav-link {% if request.endpoint == 'teacher.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('teacher.history') }}" class="nav-link {% if request.endpoint == 'teacher.history' %}active{% endif %}">Session History</a>
+        <a href="{{ url_for('reports.records_search') }}" class="nav-link {% if request.endpoint == 'reports.records_search' %}active{% endif %}">Attendance Records</a>
+        <a href="{{ url_for('teacher.profile') }}" class="nav-link {% if request.endpoint == 'teacher.profile' %}active{% endif %}">Profile</a>
+      {% elif g.user.role == 'student' %}
+        <a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('student.qr_checkin') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('student.qr') %}active{% endif %}">QR Check-in</a>
+        <a href="{{ url_for('student.account_settings') }}" class="nav-link {% if request.endpoint == 'student.account_settings' %}active{% endif %}">Account Settings</a>
+      {% elif g.user.role == 'auditor' %}
+        <a href="{{ url_for('school_admin.audit_log') }}" class="nav-link {% if request.endpoint == 'school_admin.audit_log' %}active{% endif %}">Audit Log</a>
+        <a href="{{ url_for('reports.sessions_list') }}" class="nav-link {% if request.endpoint == 'reports.sessions_list' %}active{% endif %}">Sessions</a>
+        <a href="{{ url_for('reports.records_search') }}" class="nav-link {% if request.endpoint == 'reports.records_search' %}active{% endif %}">Attendance Records</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar">{{ g.user.full_name[:1] }}</div>
+        <div>
+          <div class="user-name">{{ g.user.full_name }}</div>
+          <div class="user-role">{{ g.user.role.replace('_', ' ')|capitalize }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('auth.change_password') }}" class="logout-link">Change password</a>
+      <a href="{{ url_for('auth.logout') }}" class="logout-link">Log out</a>
+    </div>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    </header>
+
+    <main class="content">
+      {% if storage_warning and g.user.role == 'super_admin' %}
+        <div class="alert-banner">Face-recognition data is stored on temporary disk. Attach a Railway Volume and set <code>DATA_DIR</code> or enrolled faces will be lost on the next deploy. See DEPLOY_RAILWAY.md.</div>
+      {% endif %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="toast-stack">
+            {% for category, message in messages %}
+              <div class="toast toast-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% else %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="toast-stack toast-stack-standalone">
+        {% for category, message in messages %}
+          <div class="toast toast-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+{% if credentials %}{% include "partials/credentials_dialog.html" %}{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

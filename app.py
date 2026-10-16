@@ -14,6 +14,8 @@ import logging
 import os
 import sys
 
+import click
+
 from flask import Flask, abort, g, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -24,7 +26,8 @@ from routes.auth import ROLE_DASHBOARD
 from utils.csrf import csrf_protect, get_csrf_token
 
 # Endpoints reachable while a forced password change is pending
-_PASSWORD_CHANGE_ALLOWED = {"auth.change_password", "auth.logout", "static", "healthz", "readyz"}
+_PASSWORD_CHANGE_ALLOWED = {"auth.change_password", "auth.logout", "static", "healthz", "readyz",
+                            "offline.service_worker", "offline.manifest", "offline.shell"}
 
 
 def create_app():
@@ -66,7 +69,7 @@ def create_app():
         user = g.get("user")
         if (user is not None and user["must_change_password"]
                 and request.endpoint not in _PASSWORD_CHANGE_ALLOWED
-                and not request.path.startswith("/api/")):
+                and not request.path.startswith(("/api/", "/offline-api/"))):
             return redirect(url_for("auth.change_password"))
 
     # ---- CSRF protection for all state-changing requests (API excluded: device-key auth) ----
@@ -74,6 +77,8 @@ def create_app():
     def enforce_csrf():
         if request.path.startswith("/api/") or request.endpoint in ("healthz", "readyz"):
             return
+        if request.path.startswith("/offline-api/") and g.get("user") is None:
+            return   # not signed in: the endpoint answers with a JSON 401, nothing to forge
         if not csrf_protect():
             abort(400, description="Invalid or missing CSRF token.")
 
@@ -109,7 +114,7 @@ def create_app():
 
     # ---- Register blueprints ----
     from routes import (admin_accounts, admin_biometrics, admin_devices, admin_ops,
-                         admin_manage, admin_people, api, auth, parent, reports, school_admin,
+                         admin_manage, admin_people, api, auth, offline, offline_face, parent, reports, school_admin,
                          student, teacher)
 
     app.register_blueprint(auth.bp)
@@ -125,6 +130,9 @@ def create_app():
     app.register_blueprint(parent.bp)
     app.register_blueprint(reports.bp)
     app.register_blueprint(api.bp)
+    app.register_blueprint(offline.bp)
+    app.register_blueprint(offline_face.bp)
+    app.jinja_env.globals["offline_version"] = offline.OFFLINE_APP_VERSION
 
     # ---- Root redirect + health checks ----
     @app.route("/")
@@ -183,6 +191,16 @@ def create_app():
         """Apply pending schema migrations. Safe to run repeatedly; never deletes data."""
         with app.app_context():
             database.init_db()
+
+    @app.cli.command("purge-face-templates")
+    @click.option("--days", default=365, show_default=True, help="Delete inactive templates older than this.")
+    @click.option("--dry-run/--apply", default=True, show_default=True, help="Only list what would be deleted.")
+    def purge_face_templates_command(days, dry_run):
+        """Retention: delete inactive offline face templates (and those of students who left)."""
+        from services import face_offline_service
+        with app.app_context():
+            ids = face_offline_service.purge(database.get_db(), days, dry_run=dry_run)
+            click.echo(f"{'Would delete' if dry_run else 'Deleted'} {len(ids)} template(s).")
 
     @app.cli.command("init-db")
     def init_db_command():

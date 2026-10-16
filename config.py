@@ -45,6 +45,21 @@ class BaseConfig:
     # LBPH: LOWER distance = better match. Anything above this is rejected.
     FACE_RECOGNITION_THRESHOLD = float(os.environ.get("FACE_RECOGNITION_THRESHOLD", 65.0))
 
+    # Offline policy: hours a prepared device may keep working offline after its last
+    # successful online verification. Unsynced records are never deleted when it expires.
+    OFFLINE_GRACE_HOURS = int(os.environ.get("OFFLINE_GRACE_HOURS", 72))
+
+    # Offline face recognition (Stage 2/3). Leave FACE_OFFLINE_ENGINE empty until the model
+    # files are installed in static/models/face/ - the feature stays OFF and is reported as such.
+    FACE_OFFLINE_ENGINE = os.environ.get("FACE_OFFLINE_ENGINE", "").strip()
+    FACE_OFFLINE_ENGINE_VERSION = os.environ.get("FACE_OFFLINE_ENGINE_VERSION", "").strip()
+    FACE_OFFLINE_EMBEDDING_DIM = int(os.environ.get("FACE_OFFLINE_EMBEDDING_DIM", 0) or 0)
+    # Similarity floor (cosine). MUST be calibrated with the chosen model on real students.
+    FACE_OFFLINE_MIN_SIMILARITY = float(os.environ.get("FACE_OFFLINE_MIN_SIMILARITY", 0.60))
+    # The best match must beat the runner-up by at least this much, otherwise it is "uncertain".
+    FACE_OFFLINE_MARGIN = float(os.environ.get("FACE_OFFLINE_MARGIN", 0.05))
+    FACE_OFFLINE_MIN_SAMPLES = int(os.environ.get("FACE_OFFLINE_MIN_SAMPLES", 5))
+
     # First-time Super Administrator setup (see /auth/setup). Unset = web setup disabled.
     SETUP_TOKEN = os.environ.get("SETUP_TOKEN") or None
 

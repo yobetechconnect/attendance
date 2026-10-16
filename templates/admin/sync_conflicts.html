@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Sync Conflicts{% endblock %}
+{% block page_title %}Offline Sync Conflicts{% endblock %}
+{% block content %}
+<div class="section">
+  <p>Attendance captured offline is never silently discarded. When it disagrees with what is already on the
+     server, both versions are kept here. The server keeps the first explicit mark; you decide whether the
+     later one should replace it.</p>
+  <div class="row-actions">
+    <a class="btn btn-sm {% if show != 'all' %}btn-primary{% else %}btn-outline{% endif %}" href="{{ url_for('offline.conflicts') }}">Needs review</a>
+    <a class="btn btn-sm {% if show == 'all' %}btn-primary{% else %}btn-outline{% endif %}" href="{{ url_for('offline.conflicts', show='all') }}">All</a>
+  </div>
+</div>
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>When</th><th>Student</th><th>Session</th><th>Teacher / device</th><th>Why</th><th>On server</th><th>Offline mark</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for c in items %}
+        <tr>
+          <td>{{ c.created_at }}</td>
+          <td>{% if c.first_name %}{{ c.first_name }} {{ c.surname }}<br><small>{{ c.admission_number }}</small>{% else %}&mdash;{% endif %}</td>
+          <td>{{ c.session_code or '—' }}</td>
+          <td>{{ c.teacher_name or '—' }}<br><small>{{ (c.device_uid or '')[:8] }}</small></td>
+          <td>{{ c.reason_text }}</td>
+          <td>{% if c.kind == 'enrollment_conflict' and c.existing %}Active template from {{ c.existing.created_at }}{% elif c.existing %}{{ c.existing.status|capitalize }} ({{ c.existing.method }}){% else %}&mdash;{% endif %}</td>
+          <td>{% if c.kind == 'enrollment_conflict' %}New face enrollment{% elif c.incoming.status %}{{ c.incoming.status|capitalize }}{% else %}whole session{% endif %}</td>
+          <td>{{ c.resolution.replace('_', ' ')|capitalize }}</td>
+          <td>
+            {% if c.resolution == 'needs_review' %}
+            <form method="post" action="{{ url_for('offline.conflict_resolve', conflict_id=c.id) }}" class="row-actions">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="text" name="note" placeholder="Note (optional)" maxlength="300">
+              {% if (c.record_id and c.incoming.status) or c.kind == 'enrollment_conflict' %}<button name="action" value="apply" class="btn btn-sm btn-primary" data-confirm-text="Replace the server record with the offline mark?">Use offline mark</button>{% endif %}
+              <button name="action" value="keep" class="btn btn-sm btn-outline">Keep server</button>
+              <button name="action" value="dismiss" class="btn btn-sm btn-outline">Dismiss</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9">Nothing to review.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

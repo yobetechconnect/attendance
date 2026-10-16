@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Offline Face Templates{% endblock %}
+{% block page_title %}Offline Face Templates{% endblock %}
+{% block content %}
+<div class="section">
+  {% if cfg.enabled %}
+  <p>Active model: <strong>{{ cfg.engine }}</strong> version <strong>{{ cfg.engine_version }}</strong>
+     ({{ cfg.dim }} values per face, minimum similarity {{ cfg.min_similarity }}).</p>
+  {% else %}
+  <p><strong>Offline face recognition is switched off.</strong> Install the model files and set
+     <code>FACE_OFFLINE_ENGINE</code>, <code>FACE_OFFLINE_ENGINE_VERSION</code> and
+     <code>FACE_OFFLINE_EMBEDDING_DIM</code> to enable it. See OFFLINE_SYNC.md.</p>
+  {% endif %}
+  <p>These are numeric face templates, not photographs. They are treated as sensitive data about children:
+     delete a template when consent is withdrawn or a student leaves. Deleting a template does not touch the
+     existing server-side (OpenCV) enrollment or any attendance history.</p>
+  <form method="get" class="row-actions">
+    <input type="text" name="q" value="{{ q }}" placeholder="Name or admission number">
+    <button class="btn btn-sm btn-primary" type="submit">Search</button>
+  </form>
+</div>
+<div class="section">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Student</th><th>Model</th><th>Samples</th><th>Created</th><th>Source</th><th>Consent</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.first_name }} {{ r.surname }}<br><small>{{ r.admission_number }}{% if r.student_status != 'active' %} &middot; {{ r.student_status }}{% endif %}</small></td>
+          <td>{{ r.engine }} {{ r.engine_version }}</td>
+          <td>{{ r.sample_count }}</td>
+          <td>{{ r.created_at }}<br><small>{{ (r.device_uid or '')[:8] }}</small></td>
+          <td>{{ r.source }}</td>
+          <td>{% if r.consent_confirmed %}Confirmed{% else %}<span class="badge badge-neutral">Not recorded</span>{% endif %}{% if r.consent_note %}<br><small>{{ r.consent_note }}</small>{% endif %}</td>
+          <td>{% if r.is_active %}Active{% else %}Inactive{% if r.deactivated_at %}<br><small>{{ r.deactivated_at }}</small>{% endif %}{% endif %}</td>
+          <td class="row-actions">
+            {% if r.is_active %}
+            <form method="post" action="{{ url_for('offline_face.template_action', template_id=r.id, action='deactivate') }}" style="display:inline;" data-confirm="Deactivate this template? The student will no longer be recognised offline.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline" type="submit">Deactivate</button></form>
+            {% endif %}
+            <form method="post" action="{{ url_for('offline_face.template_action', template_id=r.id, action='delete') }}" style="display:inline;" data-confirm="Permanently delete this face template? This cannot be undone.">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline" style="color:var(--color-error);" type="submit">Delete</button></form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8">No offline face templates yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

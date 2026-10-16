@@ -1,0 +1,79 @@
+/* Offline attendance + connection status. Builds on the existing design tokens in style.css. */
+.att-pill-host { position: relative; margin-left: auto; }
+.topbar { display: flex; align-items: center; gap: 12px; }
+.att-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-border, #e2e6ee); background: #fff;
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 36px; }
+.att-dot { width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; flex: none; }
+.att-green .att-dot { background: #15803d; } .att-blue .att-dot { background: #0369a1; }
+.att-orange .att-dot { background: #ea580c; animation: att-pulse 1.2s infinite; }
+.att-red .att-dot { background: #b91c1c; } .att-grey .att-dot { background: #94a3b8; }
+@keyframes att-pulse { 50% { opacity: .35; } }
+.att-count { background: #ea580c; color: #fff; border-radius: 999px; padding: 0 7px; font-size: 12px; font-weight: 600; }
+
+.att-banner-zone { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.att-banner { padding: 10px 14px; border-radius: 10px; font-size: 14px; border: 1px solid transparent; }
+.att-banner.att-green { background: #dcfce7; color: #14532d; border-color: #86efac; }
+.att-banner.att-blue { background: #e0f2fe; color: #0c4a6e; border-color: #7dd3fc; }
+.att-banner.att-orange { background: #ffedd5; color: #7c2d12; border-color: #fdba74; }
+.att-banner.att-red { background: #fee2e2; color: #7f1d1d; border-color: #fca5a5; }
+.att-banner.att-grey { background: #f1f5f9; color: #334155; }
+.att-link { color: inherit; font-weight: 600; text-decoration: underline; }
+
+.att-panel { position: absolute; right: 0; top: 44px; z-index: 50; width: min(340px, 92vw); background: #fff;
+  border: 1px solid var(--color-border, #e2e6ee); border-radius: 12px; box-shadow: 0 8px 24px rgba(16,24,40,.15); padding: 12px; }
+.att-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+.att-k { color: #64748b; } .att-v { text-align: right; font-weight: 500; }
+.att-ok { color: #15803d; } .att-bad { color: #b91c1c; } .att-warn { color: #b45309; }
+.att-panel-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+.att-btn { display: inline-flex; align-items: center; justify-content: center; background: #0b3d5c; color: #fff; border: 1px solid #0b3d5c;
+  border-radius: 10px; padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; min-height: 44px; }
+.att-btn-outline { background: #fff; color: #0b3d5c; }
+.att-btn-small { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+.att-btn-big { width: 100%; min-height: 52px; font-size: 16px; }
+.att-btn:focus-visible, .att-pill:focus-visible, .att-mark:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+
+/* Shell page */
+.att-shell { background: var(--color-bg, #f4f6fa); margin: 0; }
+.att-shell-top { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e2e6ee; position: sticky; top: 0; z-index: 20; }
+.att-shell-top strong { flex: 1; }
+.att-back { color: #0b3d5c; text-decoration: none; font-size: 14px; }
+.att-app { max-width: 720px; margin: 0 auto; padding: 14px; }
+.att-shell .att-banner-zone { max-width: 720px; margin: 10px auto 0; padding: 0 14px; }
+.att-card { background: #fff; border: 1px solid #e2e6ee; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.att-red-soft { background: #fee2e2; }
+.att-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.att-click { cursor: pointer; }
+.att-muted { color: #64748b; font-size: 13px; }
+.att-chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #e2e8f0; }
+.att-chip.att-green { background: #dcfce7; color: #14532d; } .att-chip.att-orange { background: #ffedd5; color: #7c2d12; }
+.att-chip.att-red { background: #fee2e2; color: #7f1d1d; } .att-chip.att-blue { background: #e0f2fe; color: #0c4a6e; }
+.att-progress { margin: 10px 0 6px; font-weight: 600; }
+.att-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.att-student { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff; border: 1px solid #e2e6ee; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.att-name { min-width: 0; } .att-name strong { overflow-wrap: anywhere; }
+.att-marks { display: flex; gap: 6px; align-items: center; flex: none; }
+.att-mark { min-width: 74px; min-height: 44px; border-radius: 10px; border: 2px solid #cbd5e1; background: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.att-mark.att-p.att-on { background: #15803d; border-color: #15803d; color: #fff; }
+.att-mark.att-a.att-on { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+.att-more { min-height: 44px; border-radius: 10px; border: 2px solid #cbd5e1; background: #fff; font: inherit; }
+.att-sticky { position: sticky; bottom: 0; box-shadow: 0 -4px 12px rgba(16,24,40,.08); }
+.att-danger-zone { margin-top: 24px; }
+.att-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); max-width: 92vw; padding: 12px 16px; border-radius: 10px; color: #fff; z-index: 100; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.att-toast.att-green { background: #15803d; } .att-toast.att-red { background: #b91c1c; } .att-toast.att-blue { background: #0369a1; }
+@media (max-width: 420px) { .att-mark { min-width: 64px; } .att-student { flex-wrap: wrap; } }
+@media (prefers-reduced-motion: reduce) { .att-orange .att-dot { animation: none; } }
+
+/* ---- Stage 2/3: face scanning, enrollment, vault dialogs */
+.att-video-wrap { background: #0f172a; border-radius: 12px; overflow: hidden; margin-bottom: 10px; max-width: 480px; }
+.att-video { display: block; width: 100%; height: auto; transform: scaleX(-1); background: #0f172a; min-height: 200px; }
+.att-scan-status { padding: 12px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.att-scan-status.att-green { background: #dcfce7; color: #14532d; } .att-scan-status.att-blue { background: #e0f2fe; color: #0c4a6e; }
+.att-scan-status.att-orange { background: #ffedd5; color: #7c2d12; } .att-scan-status.att-red { background: #fee2e2; color: #7f1d1d; }
+.att-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 14px; }
+.att-modal { background: #fff; border-radius: 14px; padding: 18px; width: min(420px, 100%); max-height: 90vh; overflow: auto; }
+.att-field { display: block; margin: 10px 0; } .att-field span { display: block; font-size: 13px; color: #475569; margin-bottom: 4px; }
+.att-input { width: 100%; box-sizing: border-box; min-height: 44px; border: 2px solid #cbd5e1; border-radius: 10px; padding: 8px 12px; font: inherit; }
+.att-check { display: flex; gap: 10px; align-items: flex-start; margin: 12px 0; font-size: 14px; } .att-check input { margin-top: 3px; width: 20px; height: 20px; flex: none; }
+.att-dots { display: flex; gap: 8px; margin: 6px 0 12px; } .att-dot-s { width: 16px; height: 16px; border-radius: 50%; background: #cbd5e1; } .att-dot-s.att-on { background: #15803d; }
+.att-sub { margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }

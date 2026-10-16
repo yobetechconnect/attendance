@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b3d5c">
+<title>Offline Attendance</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+<link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=app_version) }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/offline.css', v=app_version) }}">
+</head>
+<body class="att-shell" data-att-shell="1" data-att-version="{{ app_version }}">
+{# This page is identical for every visitor: no user data, no CSRF token. #}
+<header class="att-shell-top">
+  <a class="att-back" href="/">&larr; Full site</a>
+  <strong>Offline Attendance</strong>
+  <span id="attStatus"></span>
+</header>
+<div id="attBanner" class="att-banner-zone" aria-live="polite"></div>
+<main id="attApp" class="att-app">
+  <p class="att-muted">Loading&hellip;</p>
+  <noscript><p>This page needs JavaScript.</p></noscript>
+</main>
+<script src="{{ url_for('static', filename='js/offline/att-core.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-idb.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-connection.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-statusbar.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-boot.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-face.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-camera.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-face-engine.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-app.js', v=app_version) }}"></script>
+<script src="{{ url_for('static', filename='js/offline/att-face-ui.js', v=app_version) }}"></script>
+</body>
+</html>
